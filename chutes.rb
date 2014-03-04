@@ -7,8 +7,8 @@ class Square
     @position = position
   end
 
-  def do_something_to_player(player)
-    # NOTHING
+  def action_square(player)
+    true
   end
   
 end
@@ -20,7 +20,7 @@ class LadderSquare < Square
     @to_position = to_position
   end
 
-  def do_something_to_player(player)
+  def action_square(player)
     player.move_to(@to_position)
   end
 
@@ -33,7 +33,7 @@ class ChuteSquare < Square
     @to_position = to_position
   end
 
-  def do_something_to_player(player)
+  def action_square(player)
     player.move_to(@to_position)
   end
 
@@ -62,10 +62,10 @@ class Game
 
   def play
     player_turn
-    roll_dice
+    roll
     move_piece
     if win? == true
-      puts "Yay, #{@player} wins!"
+      puts "Yay, #{@current_player} wins!"
     else
       play
     end
@@ -94,22 +94,23 @@ class Game
     end
     @players = []
     player_count.times do |i|
-      @players << Player.new(i + 1)
+      @players << Player.new(i + 2)
     end
     @current_player = @players.first  
   end
 
 
-  # TODO: next_player (use index, cycle, shift/unshift, etc)
-
   def player_turn
-    @current_player = @players.cycle{ |x| x unless win? == true  } 
+    @current_player = @players.push(@players.shift).first
   end
 
   def move_piece
     @current_player.move(roll)
+    if @current_player.position > @board.size
+      @current_player.position = @board.size
+    end
     square = @board[@current_player.position]
-    square.do_something_to_player(@current_player)
+    square.action_square(@current_player)
   end
 
   def roll
@@ -125,8 +126,9 @@ end
 class Player
 
   attr_reader :number, :position
+
   def initialize(number)
-    @number = 0
+    @number = number
     @position = 0
   end
 
